@@ -3,7 +3,9 @@ pipeline {
   stages {
     stage('Build') {
       when {
-        branch 'develop'
+        expression {
+            return env.GIT_BRANCH == "origin/develop"
+        }
       }
       steps {
         sh 'mvn clean install'
@@ -11,7 +13,9 @@ pipeline {
     }
     stage('Test') {
       when {
-        branch 'develop'
+        expression {
+            return env.GIT_BRANCH == "origin/develop"
+        }
       }
       steps {
         sh 'mvn test'
@@ -19,7 +23,9 @@ pipeline {
     }
     stage('Versioning') {
       when {
-        branch 'master'
+        expression {
+            return env.GIT_BRANCH == "origin/master"
+        }
       }
       steps {
         sh 'git fetch --tags'
@@ -33,7 +39,9 @@ pipeline {
     }
     stage('Build Docker RC Image') {
       when {
-        branch 'master'
+        expression {
+            return env.GIT_BRANCH == "origin/master"
+        }
       }
       steps {
         sh 'docker build -t my-app:$VERSION .'
