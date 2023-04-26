@@ -35,6 +35,10 @@ pipeline {
           
           def response = sh(returnStdout: true, script: "curl -X POST -H 'Authorization: token ${authToken}' -H 'Accept: application/vnd.github.v3+json' -d '${payload}' ${ghApiUrl}")
           println(response)
+
+          // Check if authentication failed
+          if (response.contains("401 Unauthorized")) {
+            error("Failed to authenticate with GitHub Actions API. Check your credentials.")
         }
       }
     }
