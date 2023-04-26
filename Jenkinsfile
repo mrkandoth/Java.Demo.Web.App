@@ -28,14 +28,29 @@ pipeline {
         }
       }
       steps {
-        script {
-          def ghApiUrl = "https://api.github.com/repos/{OWNER}/{REPO}/actions/workflows/{WORKFLOW_FILE}/dispatches"
-          def authToken = "YOUR_GITHUB_TOKEN"
-          def payload = "{\"ref\":\"${env.BRANCH_NAME}\",\"inputs\": {\"version\":\"$VERSION\"}}"
-          
-          def response = sh(returnStdout: true, script: "curl -X POST -H 'Authorization: token ${authToken}' -H 'Accept: application/vnd.github.v3+json' -d '${payload}' ${ghApiUrl}")
-          println(response)
-        }
+          script {
+              def ghToken = "GITHUB_TOKEN"  // Assuming you have defined GITHUB_TOKEN credentials in Jenkins Agent Env
+              def ghRepoOwner = 'mrkandoth'
+              def ghRepoName = 'Java.Demo.Web.App'
+              def ghWorkflowName = 'Release'
+              
+              def apiUrl = "https://api.github.com/repos/${ghRepoOwner}/${ghRepoName}/actions/workflows/${ghWorkflowName}/dispatches"
+              
+              def response = httpRequest(
+                  httpMode: 'POST',
+                  url: apiUrl,
+                  authentication: ghToken,
+                  contentType: 'APPLICATION_JSON',
+                  wrapAsMultipart: false,
+                  requestBody: '{"ref": "master"}'  // Replace with your desired branch/ref
+              )
+              
+              if (response.status == 204) {
+                  println "GitHub Actions job triggered successfully!"
+              } else {
+                  println "Failed to trigger GitHub Actions job. Status code: ${response.status}"
+              }
+          }
       }
     }
     stage('Build Docker RC Image') {
@@ -52,4 +67,39 @@ pipeline {
       }
     }
   }
+}
+
+
+pipeline {
+    agent any
+    
+    stages {
+        stage('Trigger GitHub Actions Job') {
+            steps {
+                script {
+                    def ghToken = credentials('github-token')  // Assuming you have defined GitHub token credentials in Jenkins
+                    def ghRepoOwner = 'your-github-username'
+                    def ghRepoName = 'your-github-repo'
+                    def ghWorkflowName = 'your-workflow-name'
+                    
+                    def apiUrl = "https://api.github.com/repos/${ghRepoOwner}/${ghRepoName}/actions/workflows/${ghWorkflowName}/dispatches"
+                    
+                    def response = httpRequest(
+                        httpMode: 'POST',
+                        url: apiUrl,
+                        authentication: ghToken,
+                        contentType: 'APPLICATION_JSON',
+                        wrapAsMultipart: false,
+                        requestBody: '{"ref": "main"}'  // Replace with your desired branch/ref
+                    )
+                    
+                    if (response.status == 204) {
+                        println "GitHub Actions job triggered successfully!"
+                    } else {
+                        println "Failed to trigger GitHub Actions job. Status code: ${response.status}"
+                    }
+                }
+            }
+        }
+    }
 }
