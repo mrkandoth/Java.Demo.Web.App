@@ -30,7 +30,7 @@ pipeline {
       steps {
         script {
           def ghApiUrl = "https://api.github.com/repos/{OWNER}/{REPO}/actions/workflows/{WORKFLOW_FILE}/dispatches"
-          def authToken = "GITHUB_TOKEN"
+          def authToken = env.GITHUB_TOKEN
           def payload = "{\"ref\":\"${env.BRANCH_NAME}\"}"
           
           def response = sh(returnStdout: true, script: "curl -X POST -H 'Authorization: token ${authToken}' -H 'Accept: application/vnd.github.v3+json' -d '${payload}' ${ghApiUrl}")
