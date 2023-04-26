@@ -28,13 +28,14 @@ pipeline {
         }
       }
       steps {
-        sh 'git fetch --tags'
-        sh 'VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression=project.version -q -DforceStdout)'
-        sh 'RELEASE_TYPE=$(git log -1 --pretty=%B | grep -E "^fix|^feat|^docs|^style|^refactor|^perf|^test|^build|^ci|^chore")'
-        sh 'if [ -z "$RELEASE_TYPE" ]; then RELEASE_TYPE=patch; fi'
-        sh 'VERSION=$(mvn org.codehaus.mojo:versions-maven-plugin:2.7:set -DnewVersion=$(semver -p $RELEASE_TYPE $VERSION) -DgenerateBackupPoms=false -q -DforceStdout)'
-        sh 'git tag -a $VERSION -m "Version $VERSION"'
-        sh 'git push --tags'
+        script {
+          def ghApiUrl = "https://api.github.com/repos/{OWNER}/{REPO}/actions/workflows/{WORKFLOW_FILE}/dispatches"
+          def authToken = "YOUR_GITHUB_TOKEN"
+          def payload = "{\"ref\":\"${env.BRANCH_NAME}\",\"inputs\": {\"version\":\"$VERSION\"}}"
+          
+          def response = sh(returnStdout: true, script: "curl -X POST -H 'Authorization: token ${authToken}' -H 'Accept: application/vnd.github.v3+json' -d '${payload}' ${ghApiUrl}")
+          println(response)
+        }
       }
     }
     stage('Build Docker RC Image') {
