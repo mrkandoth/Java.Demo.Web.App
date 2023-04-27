@@ -29,7 +29,7 @@ pipeline {
       }
       steps {
         script {
-          def ghApiUrl = "https://api.github.com/repos/{OWNER}/{REPO}/actions/workflows/{WORKFLOW_FILE}/dispatches"
+          def ghApiUrl = "https://api.github.com/repos/${env.OWNER}/${env.REPO}/actions/workflows/${env.WORKFLOW_FILE}/dispatches"
           def authToken = env.GITHUB_TOKEN
           def payload = "{\"ref\":\"${env.BRANCH_NAME}\"}"
           
