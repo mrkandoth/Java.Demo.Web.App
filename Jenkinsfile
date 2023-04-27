@@ -37,7 +37,7 @@ pipeline {
                 println(response)
 
                 // Check if authentication failed
-                if (response == 201) {
+                if (response == 0) {
                     println "GitHub Actions job triggered successfully!"
                 } else {
                     println "Failed to trigger GitHub Actions job. Status code: ${response}"
