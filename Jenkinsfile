@@ -46,12 +46,12 @@ pipeline {
         }
     }
     stage('Build Docker RC Image') {
-      dependsOn 'Versioning'
       when {
         expression {
           return env.GIT_BRANCH == "origin/master"
         }
       }
+      dependsOn 'Versioning'
       steps {
         sh "docker build -t java-demo-app:${sh(script: 'git describe --abbrev=0 --tags', returnStdout: true).trim()} ."
         // sh 'docker tag my-app:$VERSION my-app:latest'
