@@ -52,7 +52,7 @@ pipeline {
         }
       }
       steps {
-        sh 'docker build -t java-demo-app:$VERSION .'
+        sh 'docker build -t java-demo-app:$(git describe --abbrev=0 --tags) .'
         // sh 'docker tag my-app:$VERSION my-app:latest'
         // sh 'docker push my-app:$VERSION'
         // sh 'docker push my-app:latest'
