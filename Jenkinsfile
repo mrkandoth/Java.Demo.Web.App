@@ -33,7 +33,7 @@ pipeline {
           def authToken = env.GITHUB_TOKEN
           def payload = "{\"ref\":\"${env.BRANCH_NAME}\"}"
           
-          def response = sh(returnStdout: true, script: "curl -X POST -H 'Authorization: token ${authToken}' -H 'Accept: application/vnd.github.v3+json' -d '${payload}' ${ghApiUrl}")
+          def response = sh(returnStdout: true, returnStatus: true, script: "curl -X POST -H 'Authorization: token ${authToken}' -H 'Accept: application/vnd.github.v3+json' -d '${payload}' ${ghApiUrl}")
           println(response)
 
           // Check if authentication failed
