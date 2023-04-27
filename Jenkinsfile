@@ -37,8 +37,10 @@ pipeline {
           println(response)
 
           // Check if authentication failed
-          if (response.contains("401 Unauthorized")) {
-            error("Failed to authenticate with GitHub Actions API. Check your credentials.")
+          if (response.status == 204) {
+              println "GitHub Actions job triggered successfully!"
+          } else {
+              println "Failed to trigger GitHub Actions job. Status code: ${response.status}"
           }
         }
       }
