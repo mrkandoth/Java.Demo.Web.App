@@ -48,10 +48,10 @@ pipeline {
     stage('Build Docker RC Image') {
       when {
         expression {
-          return env.GIT_BRANCH == "origin/master"
-          return currentBuild.getBuildCauses().findAll { it.shortDescription.contains('Completed Versioning') }.size() > 0
+          return env.GIT_BRANCH == "origin/master" &&
           def commitMessage = sh(returnStdout: true, script: 'git log --format=%B -n 1').trim()
           return commitMessage.contains('chore:')
+        // return currentBuild.getBuildCauses().findAll { it.shortDescription.contains('Completed Versioning') }.size() > 0          
         }
       }
       steps {
