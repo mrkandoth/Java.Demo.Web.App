@@ -60,7 +60,7 @@ pipeline {
               // sh 'docker push my-app:$VERSION'
               // sh 'docker push my-app:latest'
             } else {
-              echo "Skipping the stage due to incorrect commit message format or branch"
+              error("Skipping the stage due to incorrect commit message format or branch")
             }
         }
       }
