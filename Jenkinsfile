@@ -30,6 +30,11 @@ pipeline {
       steps {
           withCredentials([string(credentialsId: 'github-token', variable: 'authToken')]) {
               script {
+                  def isSemanticReleaseBotCommit = sh(returnStdout: true, script: 'git log --format=%an -n 1').trim() == 'semantic-release-bot'
+                  if (isSemanticReleaseBotCommit) {
+                    echo "Skipping the stage due to commit by semantic-release-bot"
+                    return
+                  }
                   def ghApiUrl = "https://api.github.com/repos/${env.OWNER}/${env.REPO}/actions/workflows/${env.WORKFLOW_FILE}/dispatches"
                   def payload = "{\"ref\":\"${env.BRANCH_NAME}\"}"
 
