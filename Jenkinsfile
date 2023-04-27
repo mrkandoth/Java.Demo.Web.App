@@ -46,14 +46,11 @@ pipeline {
         }
     }
     stage('Build Docker RC Image') {
-        environment {
-        COMMIT_MESSAGE = sh(returnStdout: true, script: 'git log --format=%B -n 1').trim()
-      }
-      when {
-        expression {
-          return env.GIT_BRANCH == "origin/master" && env.COMMIT_MESSAGE != null && env.COMMIT_MESSAGE.contains('chore(release):')
+        when {
+            expression {
+                return env.GIT_BRANCH == "origin/master"
+            }
         }
-      }
       steps {
         sh "docker build -t java-demo-app:${sh(script: 'git describe --abbrev=0 --tags', returnStdout: true).trim()} ."
         // sh 'docker tag my-app:$VERSION my-app:latest'
