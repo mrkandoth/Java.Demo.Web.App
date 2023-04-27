@@ -51,7 +51,7 @@ pipeline {
       }
       when {
         expression {
-          return env.GIT_BRANCH == "origin/master" && env.COMMIT_MESSAGE != null && env.COMMIT_MESSAGE.contains('chore:')
+          return env.GIT_BRANCH == "origin/master" && env.COMMIT_MESSAGE != null && env.COMMIT_MESSAGE.contains('chore(release):')
         }
       }
       steps {
