@@ -37,7 +37,7 @@ pipeline {
                 println(response)
 
                 // Check if authentication failed
-                if (response == 204) {
+                if (response == 201) {
                     println "GitHub Actions job triggered successfully!"
                 } else {
                     println "Failed to trigger GitHub Actions job. Status code: ${response}"
@@ -52,7 +52,7 @@ pipeline {
         }
       }
       steps {
-        sh 'docker build -t my-app:$VERSION .'
+        sh 'docker build -t java-demo-app:$VERSION .'
         // sh 'docker tag my-app:$VERSION my-app:latest'
         // sh 'docker push my-app:$VERSION'
         // sh 'docker push my-app:latest'
