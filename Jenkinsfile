@@ -51,16 +51,18 @@ pipeline {
         }
     }
     stage('Build Docker RC Image') {
-        when {
-            expression {
-                return env.GIT_BRANCH == "origin/master"
+      steps {
+          script {
+            def commitMessage = sh(returnStdout: true, script: 'git log --format=%B -n 1').trim()
+            if (env.GIT_BRANCH == "origin/master" && commitMessage =~ /chore\(release\): \d+\.\d+\.\d+/) {
+              sh "docker build --no-cache -t java-demo-app:${sh(script: 'git describe --abbrev=0 --tags', returnStdout: true).trim()} ."
+              // sh 'docker tag my-app:$VERSION my-app:latest'
+              // sh 'docker push my-app:$VERSION'
+              // sh 'docker push my-app:latest'
+            } else {
+              echo "Skipping the stage due to incorrect commit message format or branch"
             }
         }
-      steps {
-        sh "docker build -t java-demo-app:${sh(script: 'git describe --abbrev=0 --tags', returnStdout: true).trim()} ."
-        // sh 'docker tag my-app:$VERSION my-app:latest'
-        // sh 'docker push my-app:$VERSION'
-        // sh 'docker push my-app:latest'
       }
     }
   }
