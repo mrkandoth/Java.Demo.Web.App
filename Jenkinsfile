@@ -51,6 +51,11 @@ pipeline {
         }
     }
     stage('Build Docker RC Image') {
+      when {
+          expression {
+              return env.GIT_BRANCH == "origin/master"
+          }
+      }      
       steps {
           script {
             def commitMessage = sh(returnStdout: true, script: 'git log --format=%B -n 1').trim()
