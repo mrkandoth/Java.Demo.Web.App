@@ -51,6 +51,11 @@ pipeline {
         }
     }
     stage('Build Docker RC Image') {
+      when {
+          expression {
+              return env.GIT_BRANCH == "origin/master"
+          }
+      }      
       steps {
           script {
             def commitMessage = sh(returnStdout: true, script: 'git log --format=%B -n 1').trim()
@@ -60,7 +65,7 @@ pipeline {
               // sh 'docker push my-app:$VERSION'
               // sh 'docker push my-app:latest'
             } else {
-              skipped("Skipping the stage due to incorrect commit message format or branch")
+              echo "Skipping the stage due to incorrect commit message format or branch"
             }
         }
       }
