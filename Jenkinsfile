@@ -22,36 +22,34 @@ pipeline {
       }
     }
     stage('Versioning') {
-      when {
-        expression {
-          return env.GIT_BRANCH == "origin/master"
+        when {
+            expression {
+                return env.GIT_BRANCH == "origin/master"
+            }
         }
-      }
-      steps {
-        script {
-          def ghApiUrl = "https://api.github.com/repos/${env.OWNER}/${env.REPO}/actions/workflows/${env.WORKFLOW_FILE}/dispatches"
-          def authToken = env.GITHUB_TOKEN
-          def payload = "{\"ref\":\"${env.BRANCH_NAME}\"}"
+        steps {
+            script {
+                def ghApiUrl = "https://api.github.com/repos/${env.OWNER}/${env.REPO}/actions/workflows/${env.WORKFLOW_FILE}/dispatches"
+                def authToken = env.GITHUB_TOKEN
+                def payload = "{\"ref\":\"${env.BRANCH_NAME}\"}"
 
-          def response = sh(
-            returnStdout: true,
-            script: "curl -X POST -H 'Authorization: token ${authToken}' -H 'Accept: application/vnd.github.v3+json' -d '${payload}' ${ghApiUrl}"
-          )
-          println(response)
+                def response = sh(returnStdout: true, returnStatus: true, script: "curl -X POST -H 'Authorization: token ${authToken}' -H 'Accept: application/vnd.github.v3+json' -d '${payload}' ${ghApiUrl}")
+                println(response)
 
-          // Check if authentication failed
-          if (response == 0) {
-            println "GitHub Actions job triggered successfully!"
-          } else {
-            println "Failed to trigger GitHub Actions job. Status code: ${response}"
-          }
+                // Check if authentication failed
+                if (response == 0) {
+                    println "GitHub Actions job triggered successfully!"
+                } else {
+                    println "Failed to trigger GitHub Actions job. Status code: ${response}"
+                }
+            }
         }
-      }
     }
     stage('Build Docker RC Image') {
       when {
         expression {
           return env.GIT_BRANCH == "origin/master"
+          return currentBuild.getBuildCauses().findAll { it.shortDescription.contains('Completed Versioning') }.size() > 0
         }
       }
       steps {
