@@ -46,6 +46,10 @@ pipeline {
         }
     }
     stage('Build Docker RC Image') {
+      dependencies {
+        // Define dependencies on previous stages
+        stage('Versioning')
+      }
       when {
         expression {
           return env.GIT_BRANCH == "origin/master"
