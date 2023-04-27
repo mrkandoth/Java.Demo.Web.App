@@ -46,12 +46,12 @@ pipeline {
         }
     }
     stage('Build Docker RC Image') {
-      environment {
+        environment {
         COMMIT_MESSAGE = sh(returnStdout: true, script: 'git log --format=%B -n 1').trim()
       }
       when {
         expression {
-          return env.GIT_BRANCH == "origin/master" && env.COMMIT_MESSAGE.contains('chore:')
+          return env.GIT_BRANCH == "origin/master" && env.COMMIT_MESSAGE != null && env.COMMIT_MESSAGE.contains('chore:')
         }
       }
       steps {
