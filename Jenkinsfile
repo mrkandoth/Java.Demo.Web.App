@@ -50,6 +50,8 @@ pipeline {
         expression {
           return env.GIT_BRANCH == "origin/master"
           return currentBuild.getBuildCauses().findAll { it.shortDescription.contains('Completed Versioning') }.size() > 0
+          def commitMessage = sh(returnStdout: true, script: 'git log --format=%B -n 1').trim()
+          return commitMessage.contains('chore:')
         }
       }
       steps {
