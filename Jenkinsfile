@@ -49,13 +49,12 @@ pipeline {
       }
     }
     stage('Build Docker RC Image') {
-      dependencies {
-        // Define dependencies on previous stages
-        dependency('Versioning')
-      }
       when {
-        expression {
-          return env.GIT_BRANCH == "origin/master"
+        allOf {
+          expression {
+            return env.GIT_BRANCH == "origin/master"
+          }
+          previousStagesCompleted()
         }
       }
       steps {
