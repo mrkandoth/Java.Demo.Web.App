@@ -50,11 +50,8 @@ pipeline {
     }
     stage('Build Docker RC Image') {
       when {
-        allOf {
-          expression {
-            return env.GIT_BRANCH == "origin/master"
-          }
-          previousStagesCompleted()
+        expression {
+          return env.GIT_BRANCH == "origin/master"
         }
       }
       steps {
