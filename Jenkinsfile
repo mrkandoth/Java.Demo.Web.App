@@ -88,9 +88,9 @@ pipeline {
               if (env.GIT_BRANCH == "origin/master" && commitMessage =~ /chore\(release\): \d+\.\d+\.\d+/) {
                 // Configure AWS CLI
                 sh 'echo $AWS_CREDENTIALS > aws-credentials'
-                sh 'aws configure --profile ecr-credentials set aws_access_key_id $(cat aws-credentials | grep -oP "(?<=accessKeyId\": \")[^\"]+")'
-                sh 'aws configure --profile ecr-credentials set aws_secret_access_key $(cat aws-credentials | grep -oP "(?<=secretAccessKey\": \")[^\"]+")'
-                sh 'aws configure --profile ecr-credentials set aws_session_token $(cat aws-credentials | grep -oP "(?<=sessionToken\": \")[^\"]+")'
+                sh 'aws configure --profile ecr-credentials set aws_access_key_id "$(cat aws-credentials | grep -oP \'(?<=accessKeyId": ")[^\"]+\')"'
+                sh 'aws configure --profile ecr-credentials set aws_secret_access_key "$(cat aws-credentials | grep -oP \'(?<=secretAccessKey": ")[^\"]+\')"'
+                sh 'aws configure --profile ecr-credentials set aws_session_token "$(cat aws-credentials | grep -oP \'(?<=sessionToken": ")[^\"]+\')"'
                 // Login to AWS ECR
                 sh "aws ecr get-login-password --region $env.AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $env.ECR_REPOSITORY"
                 // Push Docker image to ECR
