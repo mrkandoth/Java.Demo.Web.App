@@ -89,9 +89,11 @@ pipeline {
             def VERSION = sh(script: 'git describe --abbrev=0 --tags', returnStdout: true).trim()
             if (env.GIT_BRANCH == "origin/master" && commitMessage =~ /chore\(release\): \d+\.\d+\.\d+/) {
               // Configure AWS CLI
-              sh "aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID"
-              sh "aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY"
-              sh "aws configure set default.region $env.AWS_DEFAULT_REGION"
+              withCredentials([string(credentialsId: 'aws-credentials', variable: 'AWS_CREDENTIALS')])
+              sh 'echo $AWS_CREDENTIALS | base64 -d > aws-credentials'
+              sh 'aws configure --profile ecr-credentials set aws_access_key_id $(cat aws-credentials | jq -r ".accessKeyId")'
+              sh 'aws configure --profile ecr-credentials set aws_secret_access_key $(cat aws-credentials | jq -r ".secretAccessKey")'
+              sh 'aws configure --profile ecr-credentials set aws_session_token $(cat aws-credentials | jq -r ".sessionToken")'
               
               // Login to AWS ECR
               sh "aws ecr get-login-password --region $env.AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $env.ECR_REPOSITORY"
