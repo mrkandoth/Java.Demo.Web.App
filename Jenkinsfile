@@ -85,23 +85,24 @@ pipeline {
       }      
       steps {
           script {
-            withCredentials([string(credentialsId: 'aws-credentials', variable: 'AWS_CREDENTIALS')])
-            def commitMessage = sh(returnStdout: true, script: 'git log --format=%B -n 1').trim()
-            def VERSION = sh(script: 'git describe --abbrev=0 --tags', returnStdout: true).trim()
-            if (env.GIT_BRANCH == "origin/master" && commitMessage =~ /chore\(release\): \d+\.\d+\.\d+/) {
-              // Configure AWS CLI
-              sh 'echo $AWS_CREDENTIALS | base64 -d > aws-credentials'
-              sh 'aws configure --profile ecr-credentials set aws_access_key_id $(cat aws-credentials | jq -r ".accessKeyId")'
-              sh 'aws configure --profile ecr-credentials set aws_secret_access_key $(cat aws-credentials | jq -r ".secretAccessKey")'
-              sh 'aws configure --profile ecr-credentials set aws_session_token $(cat aws-credentials | jq -r ".sessionToken")'
-              
-              // Login to AWS ECR
-              sh "aws ecr get-login-password --region $env.AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $env.ECR_REPOSITORY"
-              
-              // Push Docker image to ECR
-              sh "docker push ${env.ECR_REPOSITORY}:${VERSION}"
-            } else {
-              echo "Skipping the stage due to incorrect commit message format or branch"
+            withCredentials([string(credentialsId: 'aws-credentials', variable: 'AWS_CREDENTIALS')]) {
+              def commitMessage = sh(returnStdout: true, script: 'git log --format=%B -n 1').trim()
+              def VERSION = sh(script: 'git describe --abbrev=0 --tags', returnStdout: true).trim()
+              if (env.GIT_BRANCH == "origin/master" && commitMessage =~ /chore\(release\): \d+\.\d+\.\d+/) {
+                // Configure AWS CLI
+                sh 'echo $AWS_CREDENTIALS | base64 -d > aws-credentials'
+                sh 'aws configure --profile ecr-credentials set aws_access_key_id $(cat aws-credentials | jq -r ".accessKeyId")'
+                sh 'aws configure --profile ecr-credentials set aws_secret_access_key $(cat aws-credentials | jq -r ".secretAccessKey")'
+                sh 'aws configure --profile ecr-credentials set aws_session_token $(cat aws-credentials | jq -r ".sessionToken")'
+                
+                // Login to AWS ECR
+                sh "aws ecr get-login-password --region $env.AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $env.ECR_REPOSITORY"
+                
+                // Push Docker image to ECR
+                sh "docker push ${env.ECR_REPOSITORY}:${VERSION}"
+              } else {
+                echo "Skipping the stage due to incorrect commit message format or branch"
+              } 
             }
         }
       }
