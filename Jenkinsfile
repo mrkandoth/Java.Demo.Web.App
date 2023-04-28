@@ -60,8 +60,9 @@ pipeline {
       steps {
           script {
             def commitMessage = sh(returnStdout: true, script: 'git log --format=%B -n 1').trim()
+            def VERSION = sh(script: 'git describe --abbrev=0 --tags', returnStdout: true).trim()
             if (env.GIT_BRANCH == "origin/master" && commitMessage =~ /chore\(release\): \d+\.\d+\.\d+/) {
-              sh "docker build --no-cache -t java-demo-app:${sh(script: 'git describe --abbrev=0 --tags', returnStdout: true).trim()} ."
+              sh "docker build --no-cache -t ${env.IMAGE_NAME}:${VERSION} ."
               // sh 'docker tag my-app:$VERSION my-app:latest'
               // sh 'docker push my-app:$VERSION'
               // sh 'docker push my-app:latest'
