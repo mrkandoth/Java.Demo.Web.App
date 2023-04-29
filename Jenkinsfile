@@ -103,4 +103,25 @@ pipeline {
       }
     }
   }
+  stage('Deploy to INT with Harness CD') {
+    steps {
+        script {
+            def commitMessage = sh(returnStdout: true, script: 'git log --format=%B -n 1').trim()
+            def VERSION = sh(script: 'git describe --abbrev=0 --tags', returnStdout: true).trim()
+            if (env.GIT_BRANCH == "origin/master" && commitMessage =~ /chore\(release\): \d+\.\d+\.\d+/) {
+                // Deploy to Kubernetes using Harness CD
+                withCredentials([string(credentialsId: 'harness-credentials', variable: 'HARNESS_CREDENTIALS')]) {
+                    sh 'echo $HARNESS_CREDENTIALS > harness-credentials'
+                    // Set up Harness CD CLI and authenticate
+                    sh "harness configure --url $env.HARNESS_URL --email $env.HARNESS_EMAIL --secret $(cat harness-credentials)"
+
+                    // Trigger the deployment
+                    sh "harness k8s-deployment apply --service <service-name> --image ${env.ECR_REPOSITORY}:${VERSION}"
+                }
+            } else {
+                echo "Skipping the stage due to incorrect commit message format or branch"
+            }
+        }
+    }
+  }
 }
