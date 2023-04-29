@@ -113,7 +113,7 @@ pipeline {
                 withCredentials([string(credentialsId: 'harness-credentials', variable: 'HARNESS_CREDENTIALS')]) {
                     sh 'echo $HARNESS_CREDENTIALS > harness-credentials'
                     // Set up Harness CD CLI and authenticate
-                    sh "harness configure --url $env.HARNESS_URL --email $env.HARNESS_EMAIL --secret $(cat harness-credentials)"
+                    sh "harness configure --url ${env.HARNESS_URL} --email ${env.HARNESS_EMAIL} --secret $(cat harness-credentials)"
 
                     // Trigger the deployment
                     sh "harness k8s-deployment apply --service <service-name> --image ${env.ECR_REPOSITORY}:${VERSION}"
