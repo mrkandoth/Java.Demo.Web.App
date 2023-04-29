@@ -88,7 +88,7 @@ pipeline {
                   if (env.GIT_BRANCH == "origin/master" && commitMessage =~ /chore\(release\): \d+\.\d+\.\d+/) {
                       // Configure AWS CLI
                       sh 'echo $AWS_CREDENTIALS > aws-credentials'
-                      sh 'AWS_ACCESS_KEY_ID=$(cat aws-credentials | jq -r ".accessKeyId") AWS_SECRET_ACCESS_KEY=$(cat aws-credentials | jq -r ".secretAccessKey") AWS_SESSION_TOKEN=$(cat aws-credentials | jq -r ".sessionToken") aws ecr get-login-password --region '$env.AWS_DEFAULT_REGION' | docker login --username AWS --password-stdin '$env.ECR_REPOSITORY'
+                      sh 'AWS_ACCESS_KEY_ID=$(cat aws-credentials | jq -r ".accessKeyId") AWS_SECRET_ACCESS_KEY=$(cat aws-credentials | jq -r ".secretAccessKey") AWS_SESSION_TOKEN=$(cat aws-credentials | jq -r ".sessionToken") aws ecr get-login-password --region '$env.AWS_DEFAULT_REGION' | docker login --username AWS --password-stdin '$env.ECR_REPOSITORY''
 
                       // Push Docker image to ECR
                       sh "docker push ${env.ECR_REPOSITORY}:${VERSION}"
