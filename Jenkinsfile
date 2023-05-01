@@ -104,7 +104,7 @@ pipeline {
       }
     stage('Deploy to Kubernetes with Harness API') {
         steps {
-            withCredentials([usernamePassword(credentialsId: 'harness-credentials', usernameVariable: 'HARNESS_API_KEY', passwordVariable: 'HARNESS_API_KEY_PASSWORD')]) {
+            withCredentials([string(credentialsId: 'harness-credentials', variable: 'HARNESS_API_KEY')]) {
                 script {
                     def commitMessage = sh(returnStdout: true, script: 'git log --format=%B -n 1').trim()
                     def VERSION = sh(script: 'git describe --abbrev=0 --tags', returnStdout: true).trim()
