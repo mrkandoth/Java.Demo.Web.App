@@ -21,36 +21,36 @@ pipeline {
         sh 'mvn test'
       }
     }
-  stage('Versioning') {
-      when {
-          expression {
-              return env.GIT_BRANCH == "origin/master"
-          }
-      }
-      steps {
-          withCredentials([string(credentialsId: 'github-token', variable: 'authToken')]) {
-              script {
-                  def isSemanticReleaseBotCommit = sh(returnStdout: true, script: 'git log --format=%an -n 1').trim() == 'semantic-release-bot'
-                  if (isSemanticReleaseBotCommit) {
-                    echo "Skipping the stage due to commit by semantic-release-bot"
-                    return
-                  }
-                  def ghApiUrl = "https://api.github.com/repos/${env.OWNER}/${env.REPO}/actions/workflows/${env.WORKFLOW_FILE}/dispatches"
-                  def payload = "{\"ref\":\"${env.BRANCH_NAME}\"}"
+    stage('Versioning') {
+        when {
+            expression {
+                return env.GIT_BRANCH == "origin/master"
+            }
+        }
+        steps {
+            withCredentials([string(credentialsId: 'github-token', variable: 'authToken')]) {
+                script {
+                    def isSemanticReleaseBotCommit = sh(returnStdout: true, script: 'git log --format=%an -n 1').trim() == 'semantic-release-bot'
+                    if (isSemanticReleaseBotCommit) {
+                      echo "Skipping the stage due to commit by semantic-release-bot"
+                      return
+                    }
+                    def ghApiUrl = "https://api.github.com/repos/${env.OWNER}/${env.REPO}/actions/workflows/${env.WORKFLOW_FILE}/dispatches"
+                    def payload = "{\"ref\":\"${env.BRANCH_NAME}\"}"
 
-                  def response = sh(returnStdout: true, returnStatus: true, script: "curl -X POST -H 'Authorization: token ${authToken}' -H 'Accept: application/vnd.github.v3+json' -d '${payload}' ${ghApiUrl}")
-                  println(response)
+                    def response = sh(returnStdout: true, returnStatus: true, script: "curl -X POST -H 'Authorization: token ${authToken}' -H 'Accept: application/vnd.github.v3+json' -d '${payload}' ${ghApiUrl}")
+                    println(response)
 
-                  // Check if authentication failed
-                  if (response == 0) {
-                      println "GitHub Actions job triggered successfully!"
-                  } else {
-                      println "Failed to trigger GitHub Actions job. Status code: ${response}"
-                  }
-              }
-          }
-      }
-  }
+                    // Check if authentication failed
+                    if (response == 0) {
+                        println "GitHub Actions job triggered successfully!"
+                    } else {
+                        println "Failed to trigger GitHub Actions job. Status code: ${response}"
+                    }
+                }
+            }
+        }
+    }
     stage('Build Docker RC Image') {
       when {
           expression {
@@ -66,7 +66,7 @@ pipeline {
             } else {
               echo "Skipping the stage due to incorrect commit message format or branch"
             }
-        }
+          }
       }
     }
     stage('Push to AWS ECR') {
@@ -99,8 +99,50 @@ pipeline {
                 echo "Skipping the stage due to incorrect commit message format or branch"
               } 
             }
+          }
         }
       }
+    stage('Deploy to Kubernetes with Harness API') {
+        when {
+            expression {
+                return env.GIT_BRANCH == "origin/master"
+            }
+        }        
+        steps {
+            withCredentials([string(credentialsId: 'harness-credentials', variable: 'HARNESS_API_KEY')]) {
+                script {
+                    def commitMessage = sh(returnStdout: true, script: 'git log --format=%B -n 1').trim()
+                    def VERSION = sh(script: 'git describe --abbrev=0 --tags', returnStdout: true).trim()
+                    if (env.GIT_BRANCH == "origin/master" && commitMessage =~ /chore\(release\): \d+\.\d+\.\d+/) {
+                        // Set up variables
+                        def HARNESS_ACCOUNT_ID = sh(returnStdout: true, script: 'echo ${env.HARNESS_ACCOUNT_ID}').trim()
+                        def SERVICE_ID = "${env.SERVICE_ID}"
+                        def IMAGE_TAG = "${env.ECR_REPOSITORY}:${VERSION}"
+                        def HARNESS_API_KEY = sh(returnStdout: true, script: 'echo $HARNESS_API_KEY').trim()
+
+                        // Build the request payload
+                        def payload = """
+                        {
+                          "serviceId": "${SERVICE_ID}",
+                          "tag": "${IMAGE_TAG}"
+                        }
+                        """
+
+                        // Make the API request
+                        sh """
+                        curl -X POST \\
+                          -H "Content-Type: application/json" \\
+                          -H "Authorization: Bearer ${HARNESS_API_KEY}" \\
+                          -H "Harness-AccountId: ${HARNESS_ACCOUNT_ID}" \\
+                          -d '${payload}' \\
+                          "https://app.harness.io/gateway/api/cd/deployments/start"
+                        """
+                    } else {
+                        echo "Skipping the stage due to incorrect commit message format or branch"
+                    }
+                }
+            }
+        }
     }
   }
 }
