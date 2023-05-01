@@ -103,6 +103,11 @@ pipeline {
         }
       }
     stage('Deploy to Kubernetes with Harness API') {
+        when {
+            expression {
+                return env.GIT_BRANCH == "origin/master"
+            }
+        }        
         steps {
             withCredentials([string(credentialsId: 'harness-credentials', variable: 'HARNESS_API_KEY')]) {
                 script {
