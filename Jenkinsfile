@@ -115,7 +115,7 @@ pipeline {
                     def VERSION = sh(script: 'git describe --abbrev=0 --tags', returnStdout: true).trim()
                     if (env.GIT_BRANCH == "origin/master" && commitMessage =~ /chore\(release\): \d+\.\d+\.\d+/) {
                         // Set up variables
-                        def HARNESS_ACCOUNT_ID = sh(returnStdout: true, script: 'echo ${env.HARNESS_ACCOUNT_ID}').trim()
+                        def HARNESS_ACCOUNT_ID = "${env.HARNESS_ACCOUNT_ID}"
                         def SERVICE_ID = "${env.SERVICE_ID}"
                         def IMAGE_TAG = "${env.ECR_REPOSITORY}:${VERSION}"
                         def HARNESS_API_KEY = sh(returnStdout: true, script: 'echo $HARNESS_API_KEY').trim()
